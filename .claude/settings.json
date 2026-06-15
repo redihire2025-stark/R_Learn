@@ -1,0 +1,28 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm add *)",
+      "Bash(supabase --version)",
+      "Bash(npm --version)",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(d.get\\('dependencies',{}\\).get\\('@supabase/supabase-js','not found'\\)\\)\")",
+      "Bash(psql --version)",
+      "Bash(npm list *)",
+      "Bash(npx --version)",
+      "Bash(npm install *)",
+      "Bash(node -e ' *)",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\('main:', d.get\\('main',''\\)\\); print\\('module:', d.get\\('module',''\\)\\)\")",
+      "Bash(npm run *)",
+      "Bash(curl -s http://localhost:5173)",
+      "Bash(npm uninstall *)",
+      "Bash(curl -s -X POST https://api.web3forms.com/submit -H \"Content-Type: application/json\" -d '{\\\\\"access_key\\\\\":\\\\\"3482d59b-0779-4632-9a7c-22267605d15b\\\\\",\\\\\"subject\\\\\":\\\\\"Test\\\\\",\\\\\"message\\\\\":\\\\\"Test OTP delivery\\\\\",\\\\\"to\\\\\":\\\\\"testuser@redihire.com\\\\\"}')",
+      "WebSearch",
+      "WebFetch(domain:docs.web3forms.com)",
+      "Bash(findstr /r /s \"admin/users\\\\|admin/challenges\\\\|admin/courses\\\\|admin/analytics\\\\|admin/settings\\\\|Route\\\\|path=\" src\\\\app\\\\App.tsx)",
+      "Bash(findstr /r /s \"Route\\\\|createBrowserRouter\\\\|RouterProvider\" src\\\\main.tsx)",
+      "Bash(curl -s -X POST \"https://rdnhbreuusnfvwmrecor.supabase.co/rest/v1/rpc/request_otp\" -H \"apikey: sb_publishable_UX9W2119dvHvH72o9dbHWw_PSaefPvP\" -H \"authorization: Bearer sb_publishable_UX9W2119dvHvH72o9dbHWw_PSaefPvP\" -H \"content-type: application/json\" -H \"content-profile: public\" --data-raw \"{\\\\\"p_email\\\\\":\\\\\"chandra.d@redihire.com\\\\\",\\\\\"p_name\\\\\":null,\\\\\"p_department\\\\\":\\\\\"Engineering\\\\\"}\")",
+      "Bash(curl -s \"https://rdnhbreuusnfvwmrecor.supabase.co/rest/v1/otp_codes?limit=0\" -H \"apikey: sb_publishable_UX9W2119dvHvH72o9dbHWw_PSaefPvP\" -H \"authorization: Bearer sb_publishable_UX9W2119dvHvH72o9dbHWw_PSaefPvP\" -H \"Accept: application/openapi+json\")",
+      "Bash(curl -s -X POST \"https://rdnhbreuusnfvwmrecor.supabase.co/rest/v1/rpc/request_otp\" -H \"apikey: sb_publishable_UX9W2119dvHvH72o9dbHWw_PSaefPvP\" -H \"authorization: Bearer sb_publishable_UX9W2119dvHvH72o9dbHWw_PSaefPvP\" -H \"content-type: application/json\" --data-raw \"{\\\\\"p_email\\\\\":\\\\\"test@test.com\\\\\"}\")",
+      "Bash(curl -s \"https://rdnhbreuusnfvwmrecor.supabase.co/rest/v1/otp_codes?select=*&limit=1\" -H \"apikey: sb_publishable_UX9W2119dvHvH72o9dbHWw_PSaefPvP\" -H \"authorization: Bearer sb_publishable_UX9W2119dvHvH72o9dbHWw_PSaefPvP\")"
+    ]
+  }
+}
