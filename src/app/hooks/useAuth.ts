@@ -26,11 +26,25 @@ interface AuthStore {
   refreshProfile: () => Promise<void>;
 }
 
+// Dev mode: skip auth on localhost
+const IS_DEV = typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
+
+const DEV_MOCK_USER: User = {
+  id: "dev-user-001",
+  name: "Dev User",
+  email: "dev@redihire.com",
+  role: "employee",
+  department: "Engineering",
+  isApproved: true,
+  xp: 250,
+  streak: 5,
+};
+
 export const useAuth = create<AuthStore>()(
   persist(
     (set, get) => ({
-      user: null,
-      isAuthenticated: false,
+      user: IS_DEV ? DEV_MOCK_USER : null,
+      isAuthenticated: IS_DEV ? true : false,
 
       login: async (email: string, password: string) => {
         if (!isAllowedEmail(email)) {
