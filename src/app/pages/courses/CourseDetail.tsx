@@ -78,8 +78,8 @@ export function CourseDetail() {
   if (!course) return <div className="p-8">Course not found.</div>;
 
   return (
-    <div className="flex h-full overflow-hidden">
-      <aside className="w-72 border-r border-border flex flex-col">
+    <div className="flex h-full min-h-0 overflow-hidden">
+      <aside className="w-72 border-r border-border flex flex-col min-h-0">
         <div className="p-4 border-b border-border">
           <Link to="/courses" className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-3">
             <ArrowLeft className="w-4 h-4" /> Back to Courses
@@ -93,7 +93,7 @@ export function CourseDetail() {
             <Progress value={progressPct} className="h-1.5" />
           </div>
         </div>
-        <ScrollArea className="flex-1">
+        <ScrollArea className="flex-1 min-h-0 overflow-hidden">
           <div className="p-2 space-y-1">
             {modules.map((mod) => (
               <div key={mod.id}>
@@ -125,7 +125,7 @@ export function CourseDetail() {
         </ScrollArea>
       </aside>
 
-      <main className="flex-1 flex flex-col overflow-hidden">
+      <main className="flex-1 flex flex-col overflow-hidden min-h-0">
         {activeLesson ? (
           <>
             <div className="p-6 border-b border-border flex items-center justify-between">
@@ -150,8 +150,8 @@ export function CourseDetail() {
                 </Button>
               </div>
             </div>
-            <ScrollArea className="flex-1">
-              <div className="p-8 max-w-3xl prose prose-neutral dark:prose-invert max-w-none">
+            <ScrollArea className="flex-1 min-h-0 overflow-hidden">
+              <div className="p-8 max-w-4xl mx-auto prose prose-neutral dark:prose-invert [&_pre]:overflow-x-auto [&_pre]:max-w-full">
                 <ReactMarkdown
                   components={{
                     code({ className, children, ...props }) {
