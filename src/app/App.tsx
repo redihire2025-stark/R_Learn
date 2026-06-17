@@ -45,11 +45,15 @@ function AdminRedirect({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+import { useLocation } from "react-router-dom";
+
 function AppLayout({ children }: { children: React.ReactNode }) {
+  const location = useLocation();
+  const isInsideCourse = location.pathname.startsWith("/courses/") && location.pathname !== "/courses";
   return (
     <div className="flex h-screen overflow-hidden">
       <Sidebar />
-      <div className="flex-1 flex flex-col overflow-hidden min-h-0">
+      <div className={`flex-1 flex flex-col overflow-hidden min-h-0 transition-all duration-300 ${isInsideCourse ? "pl-16" : ""}`}>
         <Navbar />
         <main className="flex-1 overflow-y-auto bg-background min-h-0">{children}</main>
       </div>

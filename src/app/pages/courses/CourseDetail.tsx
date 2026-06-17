@@ -150,20 +150,34 @@ export function CourseDetail() {
                 </Button>
               </div>
             </div>
-            <ScrollArea className="flex-1 min-h-0 overflow-hidden">
-              <div className="p-8 max-w-4xl mx-auto prose prose-neutral dark:prose-invert [&_pre]:overflow-x-auto [&_pre]:max-w-full">
+            <ScrollArea className="flex-1 min-h-0 overflow-hidden bg-background">
+              <div className="p-4 md:p-6 max-w-5xl mx-auto [&_pre]:overflow-x-auto [&_pre]:max-w-full">
                 <ReactMarkdown
                   components={{
+                    h1: ({ children }) => <h1 className="text-3xl font-extrabold tracking-tight mt-6 mb-4 text-foreground">{children}</h1>,
+                    h2: ({ children }) => <h2 className="text-2xl font-bold tracking-tight mt-8 mb-4 text-foreground">{children}</h2>,
+                    h3: ({ children }) => <h3 className="text-xl font-semibold tracking-tight mt-6 mb-3 text-foreground">{children}</h3>,
+                    p: ({ children }) => <p className="text-base leading-7 text-slate-800 dark:text-slate-200 mb-5 font-normal">{children}</p>,
+                    ul: ({ children }) => <ul className="list-disc pl-6 mb-5 space-y-2 text-slate-800 dark:text-slate-200">{children}</ul>,
+                    ol: ({ children }) => <ol className="list-decimal pl-6 mb-5 space-y-2 text-slate-800 dark:text-slate-200">{children}</ol>,
+                    li: ({ children }) => <li className="text-base leading-7">{children}</li>,
+                    blockquote: ({ children }) => <blockquote className="border-l-4 border-primary pl-4 italic my-6 text-muted-foreground bg-muted/40 py-3 pr-3 rounded-r-md">{children}</blockquote>,
                     code({ className, children, ...props }) {
                       const match = /language-(\w+)/.exec(className || "");
                       return match ? (
-                        <SyntaxHighlighter style={vscDarkPlus} language={match[1]} PreTag="div">
-                          {String(children).replace(/\n$/, "")}
-                        </SyntaxHighlighter>
+                        <div className="my-6 rounded-lg overflow-hidden border border-border shadow-md">
+                          <SyntaxHighlighter style={vscDarkPlus} language={match[1]} PreTag="div" customStyle={{ margin: 0, padding: '1.25rem', fontSize: '0.875rem' }}>
+                            {String(children).replace(/\n$/, "")}
+                          </SyntaxHighlighter>
+                        </div>
                       ) : (
-                        <code className={className} {...props}>{children}</code>
+                        <code className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono font-semibold text-foreground" {...props}>{children}</code>
                       );
                     },
+                    hr: () => <hr className="my-8 border-border" />,
+                    table: ({ children }) => <div className="my-6 w-full overflow-y-auto rounded-lg border border-border"><table className="w-full border-collapse text-sm">{children}</table></div>,
+                    th: ({ children }) => <th className="border-b border-border bg-muted/60 px-4 py-3 text-left font-semibold text-foreground">{children}</th>,
+                    td: ({ children }) => <td className="border-b border-border px-4 py-3 text-muted-foreground">{children}</td>,
                   }}
                 >
                   {activeLesson.content || "# No content yet\n\nThis lesson is coming soon."}
