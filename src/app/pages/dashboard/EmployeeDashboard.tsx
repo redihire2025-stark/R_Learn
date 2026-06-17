@@ -9,6 +9,8 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { supabase } from "../../lib/supabase";
 import { Skeleton } from "../../components/ui/skeleton";
 
+import { getCourseCoverImage } from "../../lib/utils";
+
 interface InProgressCourse { id: string; title: string; progress: number; thumbnail_color: string; moduleName?: string; }
 interface Activity { id: string; action: string; item_name: string; item_type: string; created_at: string; xp_earned: number; }
 interface WeekDay { day: string; xp: number; }
@@ -111,7 +113,11 @@ export function EmployeeDashboard() {
                 {inProgress.slice(0, 3).map((course) => (
                   <Link key={course.id} to={`/courses/${course.id}`}>
                     <div className="flex items-center gap-4 p-3 rounded-lg border border-border hover:bg-accent transition-colors cursor-pointer">
-                      <div className={`w-12 h-12 rounded-lg bg-gradient-to-br ${course.thumbnail_color} flex-shrink-0`} />
+                      <img 
+                        src={getCourseCoverImage(course.title)} 
+                        alt={course.title}
+                        className="w-12 h-12 rounded-lg object-cover flex-shrink-0"
+                      />
                       <div className="flex-1 min-w-0">
                         <p className="font-medium text-sm truncate">{course.title}</p>
                         <div className="flex items-center gap-2 mt-1.5">
