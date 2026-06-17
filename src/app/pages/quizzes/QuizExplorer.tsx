@@ -51,8 +51,8 @@ export function QuizExplorer() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {quizzes.map((q) => (
-            <Card key={q.id} className="hover:shadow-lg transition-shadow">
-              <CardHeader>
+            <Card key={q.id} className="hover:shadow-lg transition-shadow h-full flex flex-col">
+              <CardHeader className="flex-grow">
                 <div className="flex items-start justify-between gap-2">
                   <CardTitle className="text-base">{q.title}</CardTitle>
                   {q.bestScore! > 0 && (
@@ -67,22 +67,24 @@ export function QuizExplorer() {
                 </div>
                 <p className="text-sm text-muted-foreground">{q.description}</p>
               </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex items-center justify-between text-xs text-muted-foreground">
-                  <span className="flex items-center gap-1"><BookOpen className="w-3.5 h-3.5" />{q.questionCount} questions</span>
-                  <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" />{q.time_limit_minutes} min</span>
-                  <span className="flex items-center gap-1"><Trophy className="w-3.5 h-3.5 text-yellow-500" />Pass: {q.pass_percentage}%</span>
-                </div>
-                {q.bestScore! > 0 && (
-                  <div>
-                    <div className="flex justify-between text-xs mb-1">
-                      <span>Best score</span>
-                      <span className={q.bestScore! >= q.pass_percentage ? "text-green-600 font-medium" : "text-yellow-600 font-medium"}>{q.bestScore}%</span>
-                    </div>
-                    <Progress value={q.bestScore} className="h-1.5" />
+              <CardContent className="flex flex-col gap-4 pt-0">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <span className="flex items-center gap-1"><BookOpen className="w-3.5 h-3.5" />{q.questionCount} questions</span>
+                    <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" />{q.time_limit_minutes} min</span>
+                    <span className="flex items-center gap-1"><Trophy className="w-3.5 h-3.5 text-yellow-500" />Pass: {q.pass_percentage}%</span>
                   </div>
-                )}
-                <Link to={`/quizzes/${q.id}`}>
+                  {q.bestScore! > 0 && (
+                    <div>
+                      <div className="flex justify-between text-xs mb-1">
+                        <span>Best score</span>
+                        <span className={q.bestScore! >= q.pass_percentage ? "text-green-600 font-medium" : "text-yellow-600 font-medium"}>{q.bestScore}%</span>
+                      </div>
+                      <Progress value={q.bestScore} className="h-1.5" />
+                    </div>
+                  )}
+                </div>
+                <Link to={`/quizzes/${q.id}`} className="w-full mt-auto block">
                   <Button className="w-full" size="sm" variant={q.bestScore! >= q.pass_percentage ? "outline" : "default"}>
                     {q.attempts! > 0 ? (q.bestScore! >= q.pass_percentage ? "Retake Quiz" : "Try Again") : "Start Quiz"}
                   </Button>
