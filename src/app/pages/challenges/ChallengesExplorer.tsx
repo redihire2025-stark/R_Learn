@@ -65,7 +65,7 @@ export function ChallengesExplorer() {
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-3xl font-bold">Coding Challenges</h1>
-          <p className="text-muted-foreground mt-1">15 challenges across arrays, strings, algorithms, JS, Node, Auth, and more</p>
+          <p className="text-muted-foreground mt-1">Challenges across arrays, strings, algorithms, JS, Node, Auth, and more</p>
         </div>
         <div className="flex gap-4 text-center">
           <div className="bg-card border border-border rounded-lg px-4 py-2">
@@ -85,12 +85,28 @@ export function ChallengesExplorer() {
           <Input placeholder="Search challenges..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
         </div>
         <Select value={difficulty} onValueChange={setDifficulty}>
-          <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
-          <SelectContent>{["All","Easy","Medium","Hard"].map((d) => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
+          <SelectTrigger className="w-40">
+            <SelectValue>{difficulty === "All" ? "Select Difficulty" : difficulty}</SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            {["All","Easy","Medium","Hard"].map((d) => (
+              <SelectItem key={d} value={d}>
+                {d === "All" ? "All Difficulties" : d}
+              </SelectItem>
+            ))}
+          </SelectContent>
         </Select>
         <Select value={category} onValueChange={setCategory}>
-          <SelectTrigger className="w-44"><SelectValue /></SelectTrigger>
-          <SelectContent>{categories.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+          <SelectTrigger className="w-44">
+            <SelectValue>{category === "All" ? "Select Category" : category}</SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            {categories.map((c) => (
+              <SelectItem key={c} value={c}>
+                {c === "All" ? "All Categories" : c}
+              </SelectItem>
+            ))}
+          </SelectContent>
         </Select>
       </div>
 

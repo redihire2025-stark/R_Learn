@@ -6,6 +6,7 @@ import { Badge } from "../../components/ui/badge";
 import { Skeleton } from "../../components/ui/skeleton";
 import { supabase } from "../../lib/supabase";
 import { Search, BookOpen, Clock, Eye, EyeOff, Layers } from "lucide-react";
+import { getCourseCoverImage } from "../../lib/utils";
 
 interface Course {
   id: string;
@@ -121,7 +122,11 @@ export function AdminCourses() {
             <div className="space-y-3">
               {filtered.map((course) => (
                 <div key={course.id} className="flex items-center gap-4 p-4 border border-border rounded-lg hover:bg-accent/30 transition-colors">
-                  <div className={`w-12 h-12 rounded-lg bg-gradient-to-br ${course.thumbnail_color} flex-shrink-0`} />
+                  <img 
+                    src={getCourseCoverImage(course.title)} 
+                    alt={course.title}
+                    className="w-12 h-12 rounded-lg object-cover flex-shrink-0"
+                  />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <p className="text-sm font-semibold">{course.title}</p>

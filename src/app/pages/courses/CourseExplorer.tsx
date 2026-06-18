@@ -11,6 +11,8 @@ import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
 import { Skeleton } from "../../components/ui/skeleton";
 
+import { getCourseCoverImage, getChallengesForCourse } from "../../lib/utils";
+
 interface Course {
   id: string;
   title: string;
@@ -46,6 +48,8 @@ export function CourseExplorer() {
     const { data: coursesData } = await supabase.from("courses").select("*").eq("is_published", true).order("created_at");
     if (!coursesData) { setLoading(false); return; }
 
+    const { data: allEasy } = await supabase.from("challenges").select("*").eq("difficulty", "Easy").eq("is_published", true);
+
     const coursesWithProgress = await Promise.all(
       coursesData.map(async (course) => {
         const { count: totalLessons } = await supabase
@@ -66,7 +70,21 @@ export function CourseExplorer() {
           .select("id", { count: "exact", head: true })
           .eq("course_id", course.id);
 
-        const progress = totalLessons && totalLessons > 0 ? Math.round(((completedLessons ?? 0) / totalLessons) * 100) : 0;
+        const courseChalls = getChallengesForCourse(course.id, allEasy ?? []);
+        const { data: solvedSubs } = user && courseChalls.length > 0
+          ? await supabase
+              .from("challenge_submissions")
+              .select("challenge_id, passed")
+              .eq("user_id", user.id)
+              .in("challenge_id", courseChalls.map((c) => c.id))
+              .eq("passed", true)
+          : { data: [] };
+        const solvedCount = new Set(solvedSubs?.map((s) => s.challenge_id) ?? []).size;
+
+        const totalItems = (totalLessons ?? 0) + 3;
+        const completedItems = (completedLessons ?? 0) + solvedCount;
+        const progress = totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
+
         return { ...course, progress, moduleCount: moduleCount ?? 0 };
       })
     );
@@ -88,30 +106,45 @@ export function CourseExplorer() {
   const others = filtered.filter((c) => c.progress! === 0 || c.progress! === 100);
 
   const CourseCard = ({ course }: { course: Course }) => (
-    <Card className="hover:shadow-lg transition-shadow">
-      <CardHeader>
-        <div className={`w-full h-28 rounded-lg bg-gradient-to-br ${course.thumbnail_color} mb-3`} />
-        <div className="flex gap-2 mb-2 flex-wrap">
-          <span className={`text-xs px-2 py-0.5 rounded border font-medium ${difficultyColors[course.difficulty] ?? ""}`}>{course.difficulty}</span>
-          <span className="text-xs px-2 py-0.5 rounded border border-border bg-muted font-medium">{course.category}</span>
+    <Card className="hover:shadow-lg transition-all duration-300 flex flex-col h-full overflow-hidden border border-border">
+      <div className="relative w-full h-40 overflow-hidden group">
+        <img 
+          src={getCourseCoverImage(course.title)} 
+          alt={course.title}
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+        <span className="absolute bottom-3 right-3 text-xs px-2.5 py-0.5 rounded-full font-medium bg-black/40 text-white backdrop-blur-sm border border-white/20">
+          {course.category}
+        </span>
+      </div>
+      
+      <CardHeader className="space-y-2 flex-grow pb-3">
+        <div className="flex gap-2 items-center">
+          <span className={`text-[10px] px-2 py-0.5 rounded-full border font-semibold tracking-wide uppercase ${difficultyColors[course.difficulty] ?? ""}`}>
+            {course.difficulty}
+          </span>
         </div>
-        <CardTitle className="text-base leading-tight">{course.title}</CardTitle>
-        <p className="text-sm text-muted-foreground line-clamp-2">{course.description}</p>
+        <CardTitle className="text-base font-bold leading-snug line-clamp-1">{course.title}</CardTitle>
+        <p className="text-xs text-muted-foreground line-clamp-2 min-h-[2rem] leading-relaxed">{course.description}</p>
       </CardHeader>
-      <CardContent className="space-y-3">
-        <div className="flex items-center justify-between text-xs text-muted-foreground">
-          <span className="flex items-center gap-1"><BookOpen className="w-3.5 h-3.5" />{course.moduleCount} modules</span>
-          <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" />{course.duration_hours}h</span>
-          <span className="flex items-center gap-1"><Star className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />4.8</span>
+      
+      <CardContent className="space-y-4 pt-0 mt-auto">
+        <div className="flex items-center justify-between text-xs text-muted-foreground border-t border-border/50 pt-3">
+          <span className="flex items-center gap-1.5"><BookOpen className="w-3.5 h-3.5 text-primary" />{course.moduleCount} modules</span>
+          <span className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5 text-primary" />{course.duration_hours}h</span>
+          <span className="flex items-center gap-1.5"><Star className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />4.8</span>
         </div>
+        
         {(course.progress ?? 0) > 0 && (
           <div className="flex items-center gap-2">
             <Progress value={course.progress} className="h-1.5 flex-1" />
-            <span className="text-xs text-muted-foreground">{course.progress}%</span>
+            <span className="text-[10px] font-medium text-muted-foreground">{course.progress}%</span>
           </div>
         )}
-        <Link to={`/courses/${course.id}`}>
-          <Button className="w-full" size="sm" variant={course.progress === 0 ? "outline" : "default"}>
+        
+        <Link to={`/courses/${course.id}`} className="block w-full">
+          <Button className="w-full font-medium" size="sm" variant={course.progress === 0 ? "outline" : "default"}>
             {course.progress === 100 ? "Review Course" : course.progress! > 0 ? "Continue" : "Start Course"}
           </Button>
         </Link>
@@ -132,15 +165,27 @@ export function CourseExplorer() {
           <Input placeholder="Search courses..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
         </div>
         <Select value={category} onValueChange={setCategory}>
-          <SelectTrigger className="w-44"><SelectValue /></SelectTrigger>
+          <SelectTrigger className="w-44">
+            <SelectValue>{category === "All" ? "Select Category" : category}</SelectValue>
+          </SelectTrigger>
           <SelectContent>
-            {["All","Frontend","Backend","DevOps","System Design"].map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+            {["All","Frontend","Backend","DevOps","System Design"].map((c) => (
+              <SelectItem key={c} value={c}>
+                {c === "All" ? "All Categories" : c}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
         <Select value={difficulty} onValueChange={setDifficulty}>
-          <SelectTrigger className="w-44"><SelectValue /></SelectTrigger>
+          <SelectTrigger className="w-44">
+            <SelectValue>{difficulty === "All" ? "Select Difficulty" : difficulty}</SelectValue>
+          </SelectTrigger>
           <SelectContent>
-            {["All","Beginner","Intermediate","Advanced"].map((d) => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+            {["All","Beginner","Intermediate","Advanced"].map((d) => (
+              <SelectItem key={d} value={d}>
+                {d === "All" ? "All Difficulties" : d}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>
