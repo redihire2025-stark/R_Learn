@@ -26,25 +26,11 @@ interface AuthStore {
   refreshProfile: () => Promise<void>;
 }
 
-// Dev mode: skip auth on localhost
-const IS_DEV = typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
-
-const DEV_MOCK_USER: User = {
-  id: "dev-user-001",
-  name: "Dev User",
-  email: "dev@redihire.com",
-  role: "employee",
-  department: "Engineering",
-  isApproved: true,
-  xp: 250,
-  streak: 5,
-};
-
 export const useAuth = create<AuthStore>()(
   persist(
     (set, get) => ({
-      user: IS_DEV ? DEV_MOCK_USER : null,
-      isAuthenticated: IS_DEV ? true : false,
+      user: null,
+      isAuthenticated: false,
 
       login: async (email: string, password: string) => {
         if (!isAllowedEmail(email)) {
@@ -146,11 +132,11 @@ export const useAuth = create<AuthStore>()(
           streak: 0,
         }, { onConflict: "id" });
 
-        // Send both emails in parallel — don't await, must not block signup
+        // Send both emails — fire-and-forget, must not block signup
         Promise.all([
           sendPendingApprovalEmail({ name: fullName, email, department }),
           notifyAdminNewRegistration({ name: fullName, email, department }),
-        ]);
+        ]).catch((err) => console.error("[email] Notification failed:", err));
 
         set({
           user: {
@@ -203,6 +189,6 @@ export const useAuth = create<AuthStore>()(
         }
       },
     }),
-    { name: "rlearn-auth" }
+    { name: "rlearn-auth-v2" }
   )
 );

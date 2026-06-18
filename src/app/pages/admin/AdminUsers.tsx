@@ -39,18 +39,7 @@ export function AdminUsers() {
     const approved = users.find((u) => u.id === id);
     await supabase.from("profiles").update({ is_approved: true }).eq("id", id);
     if (approved) {
-      console.log("▶ Sending approval email to:", approved.email);
-      try {
-        const res = await fetch(`${import.meta.env.VITE_EMAIL_SERVER_URL || "http://localhost:3001"}/api/send-approval`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name: approved.full_name, email: approved.email }),
-        });
-        const data = await res.json();
-        console.log("✅ Approval email result:", data);
-      } catch (err) {
-        console.error("❌ Approval email error:", err);
-      }
+      await sendApprovalEmail({ name: approved.full_name, email: approved.email });
     }
     fetchUsers();
   }

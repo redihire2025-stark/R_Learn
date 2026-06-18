@@ -6,7 +6,7 @@ import { Badge } from "../../components/ui/badge";
 import { Skeleton } from "../../components/ui/skeleton";
 import { supabase } from "../../lib/supabase";
 import { Search, BookOpen, Clock, Eye, EyeOff, Layers } from "lucide-react";
-import { getCourseCoverImage } from "../../lib/utils";
+import { getCourseLogoUrl, getCourseAccentColor } from "../../lib/utils";
 
 interface Course {
   id: string;
@@ -122,11 +122,17 @@ export function AdminCourses() {
             <div className="space-y-3">
               {filtered.map((course) => (
                 <div key={course.id} className="flex items-center gap-4 p-4 border border-border rounded-lg hover:bg-accent/30 transition-colors">
-                  <img 
-                    src={getCourseCoverImage(course.title)} 
-                    alt={course.title}
-                    className="w-12 h-12 rounded-lg object-cover flex-shrink-0"
-                  />
+                  <div
+                    className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden relative bg-slate-100 dark:bg-[#0a0c10]"
+                    style={{ borderWidth: 1, borderStyle: "solid", borderColor: `${getCourseAccentColor(course.title)}35` }}
+                  >
+                    <div className="absolute inset-0" style={{ background: `radial-gradient(ellipse at center, ${getCourseAccentColor(course.title)}30 0%, transparent 75%)` }} />
+                    <img
+                      src={getCourseLogoUrl(course.title)}
+                      alt={course.title}
+                      className="w-7 h-7 object-contain relative z-10"
+                    />
+                  </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <p className="text-sm font-semibold">{course.title}</p>

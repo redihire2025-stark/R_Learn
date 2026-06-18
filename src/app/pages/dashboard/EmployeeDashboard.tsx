@@ -9,7 +9,7 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { supabase } from "../../lib/supabase";
 import { Skeleton } from "../../components/ui/skeleton";
 
-import { getCourseCoverImage, getChallengesForCourse } from "../../lib/utils";
+import { getCourseLogoUrl, getCourseAccentColor, getChallengesForCourse } from "../../lib/utils";
 
 interface InProgressCourse { id: string; title: string; progress: number; thumbnail_color: string; moduleName?: string; }
 interface Activity { id: string; action: string; item_name: string; item_type: string; created_at: string; xp_earned: number; }
@@ -128,11 +128,17 @@ export function EmployeeDashboard() {
                 {inProgress.slice(0, 3).map((course) => (
                   <Link key={course.id} to={`/courses/${course.id}`}>
                     <div className="flex items-center gap-4 p-3 rounded-lg border border-border hover:bg-accent transition-colors cursor-pointer">
-                      <img 
-                        src={getCourseCoverImage(course.title)} 
-                        alt={course.title}
-                        className="w-12 h-12 rounded-lg object-cover flex-shrink-0"
-                      />
+                      <div
+                        className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden relative bg-slate-100 dark:bg-[#0a0c10]"
+                        style={{ borderWidth: 1, borderStyle: "solid", borderColor: `${getCourseAccentColor(course.title)}35` }}
+                      >
+                        <div className="absolute inset-0" style={{ background: `radial-gradient(ellipse at center, ${getCourseAccentColor(course.title)}30 0%, transparent 75%)` }} />
+                        <img
+                          src={getCourseLogoUrl(course.title)}
+                          alt={course.title}
+                          className="w-7 h-7 object-contain relative z-10"
+                        />
+                      </div>
                       <div className="flex-1 min-w-0">
                         <p className="font-medium text-sm truncate">{course.title}</p>
                         <div className="flex items-center gap-2 mt-1.5">
