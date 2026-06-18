@@ -85,3 +85,28 @@ export function getCourseCoverImage(title: string): string {
   return "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=600&q=80";
 }
 
+export function getChallengesForCourse(courseId: string, allEasyChallenges: any[]) {
+  if (!allEasyChallenges || allEasyChallenges.length === 0) return [];
+  const sorted = [...allEasyChallenges].sort((a, b) => a.id.localeCompare(b.id));
+  
+  let hash = 0;
+  for (let i = 0; i < courseId.length; i++) {
+    hash = courseId.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  
+  const challenges: any[] = [];
+  const count = Math.min(3, sorted.length);
+  for (let i = 0; i < count; i++) {
+    const index = Math.abs(hash + i) % sorted.length;
+    let item = sorted[index];
+    let offset = 1;
+    while (challenges.some(c => c.id === item.id) && challenges.length < sorted.length) {
+      item = sorted[(index + offset) % sorted.length];
+      offset++;
+    }
+    challenges.push(item);
+  }
+  return challenges;
+}
+
+

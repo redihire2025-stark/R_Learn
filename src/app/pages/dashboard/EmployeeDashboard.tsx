@@ -9,7 +9,7 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { supabase } from "../../lib/supabase";
 import { Skeleton } from "../../components/ui/skeleton";
 
-import { getCourseCoverImage } from "../../lib/utils";
+import { getCourseCoverImage, getChallengesForCourse } from "../../lib/utils";
 
 interface InProgressCourse { id: string; title: string; progress: number; thumbnail_color: string; moduleName?: string; }
 interface Activity { id: string; action: string; item_name: string; item_type: string; created_at: string; xp_earned: number; }
@@ -35,13 +35,28 @@ export function EmployeeDashboard() {
     // In-progress courses
     const { data: allCourses } = await supabase.from("courses").select("id, title, thumbnail_color").eq("is_published", true);
     if (allCourses) {
+      const { data: allEasy } = await supabase.from("challenges").select("*").eq("difficulty", "Easy").eq("is_published", true);
       const withProgress = await Promise.all(allCourses.map(async (course) => {
         const modIds = (await supabase.from("modules").select("id").eq("course_id", course.id)).data?.map((m) => m.id) ?? [];
         const lessonIds = modIds.length > 0 ? (await supabase.from("lessons").select("id").in("module_id", modIds)).data?.map((l) => l.id) ?? [] : [];
-        const total = lessonIds.length;
-        if (total === 0) return null;
-        const { count: done } = await supabase.from("user_progress").select("id", { count: "exact", head: true }).eq("user_id", user.id).in("lesson_id", lessonIds);
-        const progress = Math.round(((done ?? 0) / total) * 100);
+        const totalLessons = lessonIds.length;
+        if (totalLessons === 0) return null;
+
+        const courseChalls = getChallengesForCourse(course.id, allEasy ?? []);
+        const { data: solvedSubs } = courseChalls.length > 0
+          ? await supabase
+              .from("challenge_submissions")
+              .select("challenge_id, passed")
+              .eq("user_id", user.id)
+              .in("challenge_id", courseChalls.map((c) => c.id))
+              .eq("passed", true)
+          : { data: [] };
+        const solvedCount = new Set(solvedSubs?.map((s) => s.challenge_id) ?? []).size;
+
+        const total = totalLessons + 3;
+        const done = ((await supabase.from("user_progress").select("id", { count: "exact", head: true }).eq("user_id", user.id).in("lesson_id", lessonIds)).count ?? 0) + solvedCount;
+
+        const progress = Math.round((done / total) * 100);
         if (progress === 0 || progress === 100) return null;
         return { ...course, progress };
       }));

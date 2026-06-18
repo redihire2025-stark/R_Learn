@@ -11,7 +11,7 @@ import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
 import { Skeleton } from "../../components/ui/skeleton";
 
-import { getCourseCoverImage } from "../../lib/utils";
+import { getCourseCoverImage, getChallengesForCourse } from "../../lib/utils";
 
 interface Course {
   id: string;
@@ -48,6 +48,8 @@ export function CourseExplorer() {
     const { data: coursesData } = await supabase.from("courses").select("*").eq("is_published", true).order("created_at");
     if (!coursesData) { setLoading(false); return; }
 
+    const { data: allEasy } = await supabase.from("challenges").select("*").eq("difficulty", "Easy").eq("is_published", true);
+
     const coursesWithProgress = await Promise.all(
       coursesData.map(async (course) => {
         const { count: totalLessons } = await supabase
@@ -68,7 +70,21 @@ export function CourseExplorer() {
           .select("id", { count: "exact", head: true })
           .eq("course_id", course.id);
 
-        const progress = totalLessons && totalLessons > 0 ? Math.round(((completedLessons ?? 0) / totalLessons) * 100) : 0;
+        const courseChalls = getChallengesForCourse(course.id, allEasy ?? []);
+        const { data: solvedSubs } = user && courseChalls.length > 0
+          ? await supabase
+              .from("challenge_submissions")
+              .select("challenge_id, passed")
+              .eq("user_id", user.id)
+              .in("challenge_id", courseChalls.map((c) => c.id))
+              .eq("passed", true)
+          : { data: [] };
+        const solvedCount = new Set(solvedSubs?.map((s) => s.challenge_id) ?? []).size;
+
+        const totalItems = (totalLessons ?? 0) + 3;
+        const completedItems = (completedLessons ?? 0) + solvedCount;
+        const progress = totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
+
         return { ...course, progress, moduleCount: moduleCount ?? 0 };
       })
     );
