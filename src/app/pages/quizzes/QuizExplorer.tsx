@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card";
 import { Button } from "../../components/ui/button";
-import { Badge } from "../../components/ui/badge";
 import { Progress } from "../../components/ui/progress";
 import { BookOpen, Clock, CheckCircle, Trophy, Target } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -10,25 +9,6 @@ import { useAuth } from "../../hooks/useAuth";
 import { Skeleton } from "../../components/ui/skeleton";
 
 interface Quiz { id: string; title: string; description: string; category: string; difficulty: string; time_limit_minutes: number; pass_percentage: number; questionCount?: number; bestScore?: number; attempts?: number; }
-
-const diffColor: Record<string, string> = { Beginner: "bg-green-100 text-green-700", Intermediate: "bg-yellow-100 text-yellow-700", Advanced: "bg-red-100 text-red-700" };
-
-const QUIZ_COURSE_MAP: Record<string, string> = {
-  "q0000001": "HTML5 Fundamentals",
-  "q0000002": "CSS3 & Tailwind CSS",
-  "q0000003": "JavaScript ES6+",
-  "q0000004": "TypeScript Complete Guide",
-  "q0000005": "React JS Mastery",
-  "q0000006": "Node.js Backend Development",
-  "q0000007": "REST API Design",
-  "q0000008": "Database Fundamentals",
-  "q0000009": "Git & GitHub Mastery",
-  "q0000010": "System Design Basics",
-  "q0000011": "Tailwind CSS Deep Dive",
-  "q0000012": "Express.js Framework",
-  "q0000013": "Authentication & Security",
-  "q0000014": "Backend Architecture",
-};
 
 export function QuizExplorer() {
   const { user } = useAuth();
@@ -58,7 +38,7 @@ export function QuizExplorer() {
     <div className="p-8 max-w-7xl mx-auto space-y-8">
       <div>
         <h1 className="text-3xl font-bold">Quiz Explorer</h1>
-        <p className="text-muted-foreground mt-1">14 topic quizzes — test your knowledge across all major technologies</p>
+        <p className="text-muted-foreground mt-1">14 topic quizzes — 15 questions each — test your knowledge across all major technologies</p>
       </div>
 
       {loading ? (
@@ -71,23 +51,14 @@ export function QuizExplorer() {
             <Card key={q.id} className="hover:shadow-lg transition-shadow flex flex-col h-full border border-border">
               <CardHeader className="flex-grow space-y-2 pb-3">
                 <div className="flex items-start justify-between gap-2">
-                  <CardTitle className="text-base font-bold leading-snug line-clamp-1">{q.title}</CardTitle>
+                  <CardTitle className="text-base font-bold leading-snug line-clamp-2">{q.title}</CardTitle>
                   {q.bestScore! > 0 && (
                     q.bestScore! >= q.pass_percentage
                       ? <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
                       : <Target className="w-5 h-5 text-yellow-500 flex-shrink-0" />
                   )}
                 </div>
-                <div className="flex gap-2 flex-wrap">
-                  <span className={`text-[10px] px-2 py-0.5 rounded-full border font-semibold tracking-wide uppercase ${diffColor[q.difficulty]}`}>{q.difficulty}</span>
-                  <span className="text-[10px] px-2.5 py-0.5 rounded-full font-medium bg-muted text-muted-foreground border border-border/20">{q.category}</span>
-                </div>
-                {QUIZ_COURSE_MAP[q.id] && (
-                  <div className="text-[11px] font-semibold text-primary mt-1">
-                    Course: {QUIZ_COURSE_MAP[q.id]}
-                  </div>
-                )}
-                <p className="text-xs text-muted-foreground line-clamp-2 min-h-[2rem] leading-relaxed mt-2">{q.description}</p>
+                <p className="text-xs text-muted-foreground line-clamp-2 min-h-[2rem] leading-relaxed">{q.description}</p>
               </CardHeader>
               <CardContent className="space-y-4 pt-0 mt-auto">
                 <div className="flex items-center justify-between text-xs text-muted-foreground border-t border-border/50 pt-3">
