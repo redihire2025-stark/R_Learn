@@ -169,8 +169,8 @@ export function Sidebar() {
         >
           <LogOut className="w-4 h-4 flex-shrink-0" />
           <span className={cn(
-            "transition-opacity duration-300 whitespace-nowrap",
-            isCollapsedPage ? "opacity-0 group-hover:opacity-100" : "opacity-100"
+            "transition-all duration-300 whitespace-nowrap",
+            isCollapsedPage ? "w-0 opacity-0 overflow-hidden group-hover:w-auto group-hover:opacity-100" : "w-auto opacity-100"
           )}>
             Logout
           </span>
