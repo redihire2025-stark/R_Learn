@@ -165,15 +165,27 @@ export function CourseExplorer() {
           <Input placeholder="Search courses..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
         </div>
         <Select value={category} onValueChange={setCategory}>
-          <SelectTrigger className="w-44"><SelectValue /></SelectTrigger>
+          <SelectTrigger className="w-44">
+            <SelectValue>{category === "All" ? "Select Category" : category}</SelectValue>
+          </SelectTrigger>
           <SelectContent>
-            {["All","Frontend","Backend","DevOps","System Design"].map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+            {["All","Frontend","Backend","DevOps","System Design"].map((c) => (
+              <SelectItem key={c} value={c}>
+                {c === "All" ? "All Categories" : c}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
         <Select value={difficulty} onValueChange={setDifficulty}>
-          <SelectTrigger className="w-44"><SelectValue /></SelectTrigger>
+          <SelectTrigger className="w-44">
+            <SelectValue>{difficulty === "All" ? "Select Difficulty" : difficulty}</SelectValue>
+          </SelectTrigger>
           <SelectContent>
-            {["All","Beginner","Intermediate","Advanced"].map((d) => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+            {["All","Beginner","Intermediate","Advanced"].map((d) => (
+              <SelectItem key={d} value={d}>
+                {d === "All" ? "All Difficulties" : d}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>
