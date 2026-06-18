@@ -13,6 +13,23 @@ interface Quiz { id: string; title: string; description: string; category: strin
 
 const diffColor: Record<string, string> = { Beginner: "bg-green-100 text-green-700", Intermediate: "bg-yellow-100 text-yellow-700", Advanced: "bg-red-100 text-red-700" };
 
+const QUIZ_COURSE_MAP: Record<string, string> = {
+  "q0000001": "HTML5 Fundamentals",
+  "q0000002": "CSS3 & Tailwind CSS",
+  "q0000003": "JavaScript ES6+",
+  "q0000004": "TypeScript Complete Guide",
+  "q0000005": "React JS Mastery",
+  "q0000006": "Node.js Backend Development",
+  "q0000007": "REST API Design",
+  "q0000008": "Database Fundamentals",
+  "q0000009": "Git & GitHub Mastery",
+  "q0000010": "System Design Basics",
+  "q0000011": "Tailwind CSS Deep Dive",
+  "q0000012": "Express.js Framework",
+  "q0000013": "Authentication & Security",
+  "q0000014": "Backend Architecture",
+};
+
 export function QuizExplorer() {
   const { user } = useAuth();
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
@@ -41,7 +58,7 @@ export function QuizExplorer() {
     <div className="p-8 max-w-7xl mx-auto space-y-8">
       <div>
         <h1 className="text-3xl font-bold">Quiz Explorer</h1>
-        <p className="text-muted-foreground mt-1">10 topic quizzes — test your knowledge across all major technologies</p>
+        <p className="text-muted-foreground mt-1">14 topic quizzes — test your knowledge across all major technologies</p>
       </div>
 
       {loading ? (
@@ -51,10 +68,10 @@ export function QuizExplorer() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {quizzes.map((q) => (
-            <Card key={q.id} className="hover:shadow-lg transition-shadow">
-              <CardHeader>
+            <Card key={q.id} className="hover:shadow-lg transition-shadow flex flex-col h-full border border-border">
+              <CardHeader className="flex-grow space-y-2 pb-3">
                 <div className="flex items-start justify-between gap-2">
-                  <CardTitle className="text-base">{q.title}</CardTitle>
+                  <CardTitle className="text-base font-bold leading-snug line-clamp-1">{q.title}</CardTitle>
                   {q.bestScore! > 0 && (
                     q.bestScore! >= q.pass_percentage
                       ? <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
@@ -62,16 +79,21 @@ export function QuizExplorer() {
                   )}
                 </div>
                 <div className="flex gap-2 flex-wrap">
-                  <span className={`text-xs px-2 py-0.5 rounded ${diffColor[q.difficulty]}`}>{q.difficulty}</span>
-                  <span className="text-xs px-2 py-0.5 rounded bg-muted">{q.category}</span>
+                  <span className={`text-[10px] px-2 py-0.5 rounded-full border font-semibold tracking-wide uppercase ${diffColor[q.difficulty]}`}>{q.difficulty}</span>
+                  <span className="text-[10px] px-2.5 py-0.5 rounded-full font-medium bg-muted text-muted-foreground border border-border/20">{q.category}</span>
                 </div>
-                <p className="text-sm text-muted-foreground">{q.description}</p>
+                {QUIZ_COURSE_MAP[q.id] && (
+                  <div className="text-[11px] font-semibold text-primary mt-1">
+                    Course: {QUIZ_COURSE_MAP[q.id]}
+                  </div>
+                )}
+                <p className="text-xs text-muted-foreground line-clamp-2 min-h-[2rem] leading-relaxed mt-2">{q.description}</p>
               </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex items-center justify-between text-xs text-muted-foreground">
-                  <span className="flex items-center gap-1"><BookOpen className="w-3.5 h-3.5" />{q.questionCount} questions</span>
-                  <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" />{q.time_limit_minutes} min</span>
-                  <span className="flex items-center gap-1"><Trophy className="w-3.5 h-3.5 text-yellow-500" />Pass: {q.pass_percentage}%</span>
+              <CardContent className="space-y-4 pt-0 mt-auto">
+                <div className="flex items-center justify-between text-xs text-muted-foreground border-t border-border/50 pt-3">
+                  <span className="flex items-center gap-1.5"><BookOpen className="w-3.5 h-3.5 text-primary" />{q.questionCount} questions</span>
+                  <span className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5 text-primary" />{q.time_limit_minutes} min</span>
+                  <span className="flex items-center gap-1.5"><Trophy className="w-3.5 h-3.5 text-yellow-500" />Pass: {q.pass_percentage}%</span>
                 </div>
                 {q.bestScore! > 0 && (
                   <div>
@@ -82,8 +104,8 @@ export function QuizExplorer() {
                     <Progress value={q.bestScore} className="h-1.5" />
                   </div>
                 )}
-                <Link to={`/quizzes/${q.id}`}>
-                  <Button className="w-full" size="sm" variant={q.bestScore! >= q.pass_percentage ? "outline" : "default"}>
+                <Link to={`/quizzes/${q.id}`} className="block w-full">
+                  <Button className="w-full font-medium" size="sm" variant={q.bestScore! >= q.pass_percentage ? "outline" : "default"}>
                     {q.attempts! > 0 ? (q.bestScore! >= q.pass_percentage ? "Retake Quiz" : "Try Again") : "Start Quiz"}
                   </Button>
                 </Link>
