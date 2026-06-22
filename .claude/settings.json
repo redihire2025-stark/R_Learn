@@ -39,7 +39,26 @@
       "Read(//c/Users/adiru/AppData/Roaming/supabase/**)",
       "Read(//c/Users/adiru/.supabase/**)",
       "PowerShell(Get-ChildItem \"$env:APPDATA\\\\supabase\\\\\" -Recurse 2>&1 | Select-Object -First 20)",
-      "Bash(node run_content_updates.mjs)"
+      "Bash(node run_content_updates.mjs)",
+      "PowerShell(git fetch origin)",
+      "PowerShell(git pull origin main)",
+      "Bash(./node_modules/.bin/tsc --noEmit)",
+      "Bash(node_modules/.bin/vite build *)",
+      "Bash(node_modules/.bin/vite --force)",
+      "Bash(vercel --version)",
+      "Bash(vercel deploy *)",
+      "Bash(vercel env *)",
+      "Bash(vercel logs *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Bash(npx vercel *)",
+      "Bash(timeout 90 bash -c \"while ! grep -qE '\\(Error|Deployed to production\\)' 'C:/Users/adiru/AppData/Local/Temp/claude/c--Users-adiru-Downloads-rlearn-final/67026aeb-1811-4312-bf4b-ef988d9ed997/tasks/b4nr9n9f3.output' 2>/dev/null; do sleep 5; done; echo done\")",
+      "Bash(Start-Sleep 60)",
+      "Bash(Get-Content \"C:\\\\Users\\\\adiru\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-adiru-Downloads-rlearn-final\\\\67026aeb-1811-4312-bf4b-ef988d9ed997\\\\tasks\\\\b4nr9n9f3.output\")",
+      "Bash(git commit --allow-empty -m 'trigger: redeploy after Vercel access granted for Chandu-dev46514 *)",
+      "Bash(dir package*)",
+      "Bash(node -e \"const p=require\\('./package.json'\\); console.log\\(p.packageManager, p.engines\\)\")"
     ]
   }
 }
