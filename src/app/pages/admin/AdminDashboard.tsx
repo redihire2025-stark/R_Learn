@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card";
 import { Button } from "../../components/ui/button";
-import { Users, BookOpen, Code, TrendingUp, UserCheck, AlertCircle, Shield, CheckCircle, X } from "lucide-react";
+import { Users, BookOpen, Code, TrendingUp, UserCheck, Shield, CheckCircle, X } from "lucide-react";
 import { supabase } from "../../lib/supabase";
+import { sendApprovalEmail } from "../../lib/emailService";
 import { useAuth } from "../../hooks/useAuth";
 import { Skeleton } from "../../components/ui/skeleton";
 import { Badge } from "../../components/ui/badge";
@@ -36,7 +37,11 @@ export function AdminDashboard() {
   }
 
   async function approveUser(id: string) {
+    const user = pending.find((u) => u.id === id);
     await supabase.from("profiles").update({ is_approved: true }).eq("id", id);
+    if (user) {
+      await sendApprovalEmail({ name: user.full_name, email: user.email });
+    }
     fetchData();
   }
 
