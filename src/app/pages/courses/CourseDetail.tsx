@@ -17,7 +17,7 @@ import { Skeleton } from "../../components/ui/skeleton";
 import Editor from "@monaco-editor/react";
 import { getChallengesForCourse } from "../../lib/utils";
 import { TryItYourself } from "../../components/TryItYourself";
-import { extractLessonCode, FALLBACKS } from "../../lib/extractLessonCode";
+import { extractEditorConfig } from "../../lib/extractLessonCode";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../components/ui/select";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "../../components/ui/resizable";
@@ -323,21 +323,20 @@ export function CourseDetail() {
                   {activeLesson.content || "# No content yet\n\nThis lesson is coming soon."}
                 </ReactMarkdown>
 
-                {/* Try it Yourself - dynamically extracts code from lesson content */}
+                {/* Try it Yourself — only shown when lesson has runnable html/js/css examples */}
                 {(() => {
-                  const extracted = extractLessonCode(activeLesson.content || "");
-                  const fallbackLang =
-                    course.category?.toLowerCase().includes("css")
-                      ? "css"
-                      : course.category?.toLowerCase().includes("javascript") || course.category?.toLowerCase().includes("js")
-                      ? "javascript"
-                      : "html";
-                  const lang = extracted?.language ?? fallbackLang;
-                  const code = extracted?.code ?? FALLBACKS[lang];
+                  const editor = extractEditorConfig(activeLesson.content || "");
+                  if (!editor.show) return null;
                   return (
                     <div className="mt-10 mb-6">
-                      <h2 className="text-2xl font-bold tracking-tight mb-4 text-foreground">Try it Yourself</h2>
-                      <TryItYourself key={activeLesson.id} code={code} language={lang} />
+                      <h2 className="text-2xl font-bold tracking-tight mb-1 text-foreground">Try it Yourself</h2>
+                      <p className="text-sm text-muted-foreground mb-4">Edit the code below and click Run to see the result live.</p>
+                      <TryItYourself
+                        key={activeLesson.id}
+                        lessonId={activeLesson.id}
+                        code={editor.code}
+                        language={editor.language}
+                      />
                     </div>
                   );
                 })()}
