@@ -1,21 +1,27 @@
 /**
- * Determines whether a lesson should show a Try It Yourself editor,
- * and if so, what code to pre-load.
+ * Scans lesson markdown content and decides:
+ *  - Should we show a Try It Yourself editor?
+ *  - What code to pre-load?
+ *  - What language/mode to use?
  *
- * Rules:
- *  - Only show editor if lesson has html / javascript / css code blocks
- *  - bash / http / plain text blocks → NO editor (can't run in browser)
- *  - Pick the most instructive example from the lesson content
- *  - Prefer code from "Example", "Mini Project", "Try It Yourself" sections
- *  - Skip code from "Common Mistakes", "Wrong", "Challenges" sections
+ * Language support matrix:
+ *   html        → iframe live preview
+ *   css         → iframe with sample HTML + your CSS
+ *   javascript  → iframe with console interceptor
+ *   jsx / tsx   → iframe with Babel standalone (React)
+ *   typescript  → strip type annotations, run as JS
+ *   sql         → NO EDITOR (can't run in browser)
+ *   bash        → NO EDITOR
+ *   http/yaml/gitignore/plain → NO EDITOR
  */
 
-export type EditorLang = "html" | "javascript" | "css";
+export type EditorLang = "html" | "css" | "javascript" | "react";
 
 export interface LessonEditor {
   show: true;
   code: string;
   language: EditorLang;
+  originalLang: string; // raw lang from fence
 }
 
 export interface NoEditor {
@@ -24,84 +30,112 @@ export interface NoEditor {
 
 export type EditorConfig = LessonEditor | NoEditor;
 
-// Languages that can actually render in an iframe sandbox
-const RUNNABLE_LANGS: Record<string, EditorLang> = {
-  html: "html",
+// Map raw fence lang → our EditorLang
+const LANG_MAP: Record<string, EditorLang> = {
+  html:       "html",
+  css:        "css",
   javascript: "javascript",
-  js: "javascript",
-  css: "css",
+  js:         "javascript",
+  jsx:        "react",
+  tsx:        "react",
+  typescript: "javascript", // strip types → run as JS
+  ts:         "javascript",
 };
 
-// Section headers that mean "don't pick code from here"
-const SKIP_SECTION_KEYWORDS = [
-  "common mistake",
-  "wrong",
-  "incorrect",
-  "coding challenge",
-  "knowledge check",
-  "interview preparation",
-  "best practice",
+// Section headings that mean "skip this code block"
+const SKIP_KEYWORDS = [
+  "common mistake", "wrong", "incorrect", "❌",
+  "coding challenge", "knowledge check",
+  "interview preparation", "interview question",
 ];
 
-// Section headers that are ideal sources for examples
-const PREFER_SECTION_KEYWORDS = [
-  "example",
-  "mini project",
-  "try it yourself",
-  "exercise",
-  "multiple code",
+// Section headings where we prefer to pick code from
+const PREFER_KEYWORDS = [
+  "example", "mini project", "try it yourself",
+  "multiple code", "syntax", "concept explanation",
 ];
 
-interface CodeCandidate {
-  code: string;
-  language: EditorLang;
-  score: number; // higher = better
+function scoreSectionBefore(textBefore: string): number {
+  const lower = textBefore.toLowerCase();
+  if (SKIP_KEYWORDS.some(k => lower.includes(k))) return -1;
+  if (PREFER_KEYWORDS.some(k => lower.includes(k))) return 2;
+  return 1;
 }
 
-function sectionScore(textBefore: string): number {
-  const lower = textBefore.toLowerCase();
-  if (SKIP_SECTION_KEYWORDS.some((kw) => lower.includes(kw))) return -1; // skip
-  if (PREFER_SECTION_KEYWORDS.some((kw) => lower.includes(kw))) return 2;
-  return 1; // neutral
+// Strip basic TypeScript type annotations so it runs as JS
+function stripTypes(code: string): string {
+  return code
+    .replace(/:\s*(string|number|boolean|void|any|never|unknown|null|undefined|object)\b(\s*\|[^=,);>\n]+)?/g, "")
+    .replace(/:\s*[A-Z][A-Za-z<>\[\]|&, ]+(?=[=,);{\n])/g, "")
+    .replace(/<[A-Z][A-Za-z<>[\], ]*>/g, "")
+    .replace(/interface\s+\w+\s*\{[^}]*\}/g, "")
+    .replace(/type\s+\w+\s*=\s*[^;]+;/g, "")
+    .replace(/^import type .+$/gm, "")
+    .replace(/\bexport\s+(default\s+)?/g, "")
+    .trim();
 }
 
 export function extractEditorConfig(content: string): EditorConfig {
   if (!content) return { show: false };
 
   const fenceRegex = /```(\w+)?\n([\s\S]*?)```/g;
-  const candidates: CodeCandidate[] = [];
+
+  interface Candidate {
+    code: string;
+    language: EditorLang;
+    originalLang: string;
+    score: number;
+    length: number;
+  }
+
+  const candidates: Candidate[] = [];
 
   let match: RegExpExecArray | null;
   while ((match = fenceRegex.exec(content)) !== null) {
     const rawLang = (match[1] ?? "").toLowerCase().trim();
-    const code = match[2].trim();
-    const lang = RUNNABLE_LANGS[rawLang];
+    const rawCode = match[2].trim();
+    const editorLang = LANG_MAP[rawLang];
 
-    // Only accept html/javascript/css — skip bash, http, plain text blocks
-    if (!lang || code.length < 30) continue;
+    if (!editorLang || rawCode.length < 20) continue;
 
-    const textBefore = content.slice(Math.max(0, match.index - 500), match.index);
-    const score = sectionScore(textBefore);
-    if (score < 0) continue; // from a "skip" section
+    const textBefore = content.slice(Math.max(0, match.index - 600), match.index);
+    const score = scoreSectionBefore(textBefore);
+    if (score < 0) continue;
 
-    candidates.push({ code, language: lang, score });
+    let finalCode = rawCode;
+    // Strip TypeScript types for ts/tsx
+    if (rawLang === "typescript" || rawLang === "ts") {
+      finalCode = stripTypes(rawCode);
+      if (finalCode.length < 15) continue; // nothing left after stripping
+    }
+
+    candidates.push({
+      code: finalCode,
+      language: editorLang,
+      originalLang: rawLang,
+      score,
+      length: finalCode.length,
+    });
   }
 
   if (candidates.length === 0) return { show: false };
 
-  // Priority: html > javascript > css (more visual feedback)
-  const langPriority: EditorLang[] = ["html", "javascript", "css"];
-
-  // Among the best-scored candidates, pick by lang priority, then by length (longer = more complete)
-  const maxScore = Math.max(...candidates.map((c) => c.score));
-  const topCandidates = candidates.filter((c) => c.score === maxScore);
+  // Pick priority: prefer higher score, then prefer longer (more complete)
+  // Language priority: html > react > javascript > css
+  const langPriority: EditorLang[] = ["html", "react", "javascript", "css"];
+  const maxScore = Math.max(...candidates.map(c => c.score));
+  const topCandidates = candidates.filter(c => c.score === maxScore);
 
   for (const lang of langPriority) {
-    const forLang = topCandidates.filter((c) => c.language === lang);
+    const forLang = topCandidates.filter(c => c.language === lang);
     if (forLang.length > 0) {
-      // Pick the longest (most complete) example
-      const best = forLang.sort((a, b) => b.code.length - a.code.length)[0];
-      return { show: true, code: best.code, language: best.language };
+      const best = forLang.sort((a, b) => b.length - a.length)[0];
+      return {
+        show: true,
+        code: best.code,
+        language: best.language,
+        originalLang: best.originalLang,
+      };
     }
   }
 
