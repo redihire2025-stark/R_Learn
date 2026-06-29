@@ -2,71 +2,28 @@ import { useState, useRef, useCallback } from "react";
 import Editor from "@monaco-editor/react";
 import { Play, RotateCcw, Maximize2, Minimize2, Code2 } from "lucide-react";
 import { Button } from "./ui/button";
-import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "./ui/resizable";
 
 interface TryItYourselfProps {
-  defaultCode?: string;
-  language?: "html" | "javascript" | "css";
-}
-
-const DEFAULT_HTML = `<!DOCTYPE html>
-<html>
-<head>
-<title>Page Title</title>
-</head>
-<body>
-
-<h1>My First Heading</h1>
-<p>My first paragraph.</p>
-
-</body>
-</html>`;
-
-const DEFAULT_JS = `// Try your JavaScript here
-console.log("Hello, World!");
-
-// Example: manipulate the DOM
-document.body.innerHTML = '<h1>Hello from JavaScript!</h1><p>Edit me and click Run!</p>';`;
-
-const DEFAULT_CSS = `/* Try your CSS here */
-body {
-  font-family: Arial, sans-serif;
-  background: #f0f4f8;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  margin: 0;
-}
-
-h1 {
-  color: #2d6a4f;
-  font-size: 2rem;
-}`;
-
-function getDefaultCode(lang: string, provided?: string) {
-  if (provided) return provided;
-  if (lang === "javascript") return DEFAULT_JS;
-  if (lang === "css") return DEFAULT_CSS;
-  return DEFAULT_HTML;
+  code: string;
+  language: "html" | "javascript" | "css";
 }
 
 function buildSrcdoc(code: string, lang: string): string {
   if (lang === "html") return code;
   if (lang === "javascript") {
-    return `<!DOCTYPE html><html><body><script>${code}<\/script></body></html>`;
+    return `<!DOCTYPE html><html><body><script>\n${code}\n<\/script></body></html>`;
   }
   if (lang === "css") {
-    return `<!DOCTYPE html><html><head><style>${code}</style></head><body><h1>Styled Heading</h1><p>This paragraph is styled by your CSS above.</p></body></html>`;
+    return `<!DOCTYPE html><html><head><style>${code}</style></head><body><h1>Styled Heading</h1><p>This paragraph is styled by your CSS above.</p><ul><li>List item one</li><li>List item two</li></ul></body></html>`;
   }
   return code;
 }
 
-export function TryItYourself({ defaultCode, language = "html" }: TryItYourselfProps) {
-  const [code, setCode] = useState(() => getDefaultCode(language, defaultCode));
-  const [srcdoc, setSrcdoc] = useState(() => buildSrcdoc(getDefaultCode(language, defaultCode), language));
+export function TryItYourself({ code: initialCode, language }: TryItYourselfProps) {
+  const [code, setCode] = useState(initialCode);
+  const [srcdoc, setSrcdoc] = useState(() => buildSrcdoc(initialCode, language));
   const [expanded, setExpanded] = useState(false);
-  const originalCode = useRef(getDefaultCode(language, defaultCode));
+  const originalCode = useRef(initialCode);
 
   const handleRun = useCallback(() => {
     setSrcdoc(buildSrcdoc(code, language));
@@ -77,15 +34,17 @@ export function TryItYourself({ defaultCode, language = "html" }: TryItYourselfP
     setSrcdoc(buildSrcdoc(originalCode.current, language));
   }, [language]);
 
-  const editorHeight = expanded ? "500px" : "280px";
+  const editorHeight = expanded ? "460px" : "280px";
+  const previewHeight = expanded ? "360px" : "220px";
 
-  return (
-    <div className={`my-8 rounded-xl border border-border shadow-md overflow-hidden bg-card ${expanded ? "fixed inset-4 z-50 shadow-2xl" : ""}`}>
+  const panel = (
+    <div className={`rounded-xl border border-border shadow-md overflow-hidden bg-card ${expanded ? "fixed inset-4 z-50 shadow-2xl flex flex-col" : ""}`}>
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-2.5 bg-muted/60 border-b border-border">
+      <div className="flex items-center justify-between px-4 py-2.5 bg-muted/60 border-b border-border flex-shrink-0">
         <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
           <Code2 className="w-4 h-4 text-emerald-500" />
           <span>Example</span>
+          <span className="text-xs font-normal text-muted-foreground ml-1 bg-muted px-1.5 py-0.5 rounded">{language.toUpperCase()}</span>
         </div>
         <button
           onClick={() => setExpanded((v) => !v)}
@@ -96,11 +55,11 @@ export function TryItYourself({ defaultCode, language = "html" }: TryItYourselfP
         </button>
       </div>
 
-      {/* Editor area */}
-      <div className="border-l-4 border-emerald-500 bg-white dark:bg-zinc-950">
+      {/* Editor */}
+      <div className="border-l-4 border-emerald-500 bg-zinc-950 flex-shrink-0">
         <Editor
           height={editorHeight}
-          language={language === "html" ? "html" : language}
+          language={language}
           value={code}
           onChange={(v) => setCode(v ?? "")}
           theme="vs-dark"
@@ -118,7 +77,7 @@ export function TryItYourself({ defaultCode, language = "html" }: TryItYourselfP
       </div>
 
       {/* Action bar */}
-      <div className="flex items-center gap-2 px-4 py-3 bg-muted/40 border-t border-border">
+      <div className="flex items-center gap-2 px-4 py-3 bg-muted/40 border-t border-border flex-shrink-0">
         <Button
           size="sm"
           onClick={handleRun}
@@ -127,21 +86,15 @@ export function TryItYourself({ defaultCode, language = "html" }: TryItYourselfP
           <Play className="w-3.5 h-3.5 mr-1.5" />
           Try it Yourself »
         </Button>
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={handleReset}
-          className="h-8 px-3 text-xs"
-          title="Reset to original"
-        >
+        <Button size="sm" variant="outline" onClick={handleReset} className="h-8 px-3 text-xs" title="Reset to original">
           <RotateCcw className="w-3.5 h-3.5 mr-1.5" />
           Reset
         </Button>
       </div>
 
-      {/* Preview panel */}
-      <div className="border-t border-border">
-        <div className="px-4 py-2 bg-muted/30 border-b border-border flex items-center gap-2">
+      {/* Preview */}
+      <div className={`border-t border-border ${expanded ? "flex-1 flex flex-col min-h-0" : ""}`}>
+        <div className="px-4 py-2 bg-muted/30 border-b border-border flex items-center gap-2 flex-shrink-0">
           <div className="flex gap-1.5">
             <span className="w-2.5 h-2.5 rounded-full bg-red-400" />
             <span className="w-2.5 h-2.5 rounded-full bg-yellow-400" />
@@ -153,17 +106,18 @@ export function TryItYourself({ defaultCode, language = "html" }: TryItYourselfP
           srcDoc={srcdoc}
           title="Try it yourself preview"
           sandbox="allow-scripts"
-          className="w-full bg-white"
-          style={{ height: expanded ? "340px" : "220px", border: "none", display: "block" }}
+          className={`w-full bg-white ${expanded ? "flex-1" : ""}`}
+          style={{ height: expanded ? undefined : previewHeight, border: "none", display: "block" }}
         />
       </div>
+    </div>
+  );
 
-      {/* Overlay backdrop for expanded mode */}
+  return (
+    <div className="my-8">
+      {panel}
       {expanded && (
-        <div
-          className="fixed inset-0 -z-10 bg-black/50"
-          onClick={() => setExpanded(false)}
-        />
+        <div className="fixed inset-0 -z-10 bg-black/50" onClick={() => setExpanded(false)} />
       )}
     </div>
   );

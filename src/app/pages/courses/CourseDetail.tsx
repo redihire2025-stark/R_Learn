@@ -17,6 +17,7 @@ import { Skeleton } from "../../components/ui/skeleton";
 import Editor from "@monaco-editor/react";
 import { getChallengesForCourse } from "../../lib/utils";
 import { TryItYourself } from "../../components/TryItYourself";
+import { extractLessonCode, FALLBACKS } from "../../lib/extractLessonCode";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../components/ui/select";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "../../components/ui/resizable";
@@ -322,19 +323,24 @@ export function CourseDetail() {
                   {activeLesson.content || "# No content yet\n\nThis lesson is coming soon."}
                 </ReactMarkdown>
 
-                {/* Try it Yourself - interactive code sandbox at end of every lesson */}
-                <div className="mt-10 mb-6">
-                  <h2 className="text-2xl font-bold tracking-tight mb-4 text-foreground">Try it Yourself</h2>
-                  <TryItYourself
-                    language={
-                      course.category?.toLowerCase().includes("css")
-                        ? "css"
-                        : course.category?.toLowerCase().includes("javascript") || course.category?.toLowerCase().includes("js")
-                        ? "javascript"
-                        : "html"
-                    }
-                  />
-                </div>
+                {/* Try it Yourself - dynamically extracts code from lesson content */}
+                {(() => {
+                  const extracted = extractLessonCode(activeLesson.content || "");
+                  const fallbackLang =
+                    course.category?.toLowerCase().includes("css")
+                      ? "css"
+                      : course.category?.toLowerCase().includes("javascript") || course.category?.toLowerCase().includes("js")
+                      ? "javascript"
+                      : "html";
+                  const lang = extracted?.language ?? fallbackLang;
+                  const code = extracted?.code ?? FALLBACKS[lang];
+                  return (
+                    <div className="mt-10 mb-6">
+                      <h2 className="text-2xl font-bold tracking-tight mb-4 text-foreground">Try it Yourself</h2>
+                      <TryItYourself key={activeLesson.id} code={code} language={lang} />
+                    </div>
+                  );
+                })()}
               </div>
             </ScrollArea>
           </>
