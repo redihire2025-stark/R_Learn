@@ -261,3 +261,126 @@ function serialize(v: unknown): string {
   if (v === undefined) return "undefined";
   try { return JSON.stringify(v); } catch { return String(v); }
 }
+
+// ─── HTML/CSS Preview Builder ─────────────────────────────────────────────────
+// For HTML5/CSS3 challenges where the function returns an HTML or CSS string,
+// we execute the function and render the returned string in a preview iframe.
+
+export function buildHTMLPreviewDoc(jsCode: string, fnName: string): string {
+  return `<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8">
+<style>body{font-family:Arial,sans-serif;margin:0;padding:12px;}</style>
+</head>
+<body id="preview">
+<script>
+try {
+  ${jsCode}
+  const fn = typeof ${fnName} !== 'undefined' ? ${fnName} : null;
+  if (fn) {
+    const result = fn();
+    if (typeof result === 'string') {
+      document.getElementById('preview').innerHTML = result;
+    }
+  } else {
+    document.getElementById('preview').innerHTML = '<p style="color:red">Function not found: ${fnName}</p>';
+  }
+} catch(e) {
+  document.getElementById('preview').innerHTML = '<p style="color:red">Error: ' + e.message + '</p>';
+}
+</script>
+</body>
+</html>`;
+}
+
+export function buildCSSPreviewDoc(jsCode: string, fnName: string): string {
+  return `<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8">
+<style>
+body{font-family:Arial,sans-serif;margin:0;padding:12px;}
+/* --- Sample HTML for CSS preview --- */
+</style>
+<style id="user-css"></style>
+</head>
+<body>
+  <h1 class="heading">Heading 1</h1>
+  <h2>Heading 2</h2>
+  <p class="paragraph">A paragraph with <strong>bold</strong> and <em>italic</em>.</p>
+  <a href="#" class="link">A link</a>
+  <ul><li>List item one</li><li>List item two</li><li>List item three</li></ul>
+  <button class="btn">Button</button>
+  <div class="card">Card element</div>
+  <div class="pricing-card">Pricing card</div>
+  <div class="grid-container">
+    <div class="grid-item">Grid 1</div>
+    <div class="grid-item">Grid 2</div>
+    <div class="grid-item">Grid 3</div>
+  </div>
+  <div class="flex-container">
+    <div class="flex-item">Flex A</div>
+    <div class="flex-item">Flex B</div>
+    <div class="flex-item">Flex C</div>
+  </div>
+  <div class="hero"><p>Hero section</p></div>
+  <nav class="navbar"><a href="#">Home</a> <a href="#">About</a></nav>
+  <div class="dashboard"><div class="sidebar">Sidebar</div><div class="main">Main</div></div>
+  <div class="menu-item">Menu Item</div>
+<script>
+try {
+  ${jsCode}
+  const fn = typeof ${fnName} !== 'undefined' ? ${fnName} : null;
+  if (fn) {
+    const result = fn();
+    if (typeof result === 'string') {
+      document.getElementById('user-css').textContent = result;
+    }
+  }
+} catch(e) {
+  document.body.insertAdjacentHTML('afterbegin', '<p style="color:red;font-family:monospace">Error: ' + e.message + '</p>');
+}
+</script>
+</body>
+</html>`;
+}
+
+export function buildTailwindPreviewDoc(jsCode: string, fnName: string): string {
+  return `<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8">
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="p-4 font-sans">
+<div id="preview" class="space-y-4">
+  <p class="text-sm text-gray-500">Loading preview...</p>
+</div>
+<div id="class-display" class="mt-4 p-3 bg-gray-100 rounded text-xs font-mono text-gray-700"></div>
+<script>
+try {
+  ${jsCode}
+  const fn = typeof ${fnName} !== 'undefined' ? ${fnName} : null;
+  if (fn) {
+    const result = fn();
+    if (typeof result === 'string') {
+      // Show the Tailwind classes applied to sample elements
+      document.getElementById('preview').innerHTML = \`
+        <div class="\${result}">
+          <h2 class="text-xl font-bold">Sample Card</h2>
+          <p class="text-gray-600 mt-2">This element has your Tailwind classes applied.</p>
+          <button class="mt-3 px-4 py-2 bg-blue-600 text-white rounded">Button</button>
+        </div>
+        <div class="\${result} mt-4">
+          <h2 class="text-xl font-bold">Another Element</h2>
+          <p class="text-gray-600 mt-2">Same classes, different content.</p>
+        </div>
+      \`;
+      document.getElementById('class-display').textContent = 'Classes: ' + result;
+    }
+  }
+} catch(e) {
+  document.getElementById('preview').innerHTML = '<p style="color:red">Error: ' + e.message + '</p>';
+}
+</script>
+</body>
+</html>`;
+}
